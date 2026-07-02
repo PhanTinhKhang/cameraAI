@@ -1,0 +1,543 @@
+import cv2
+import asyncio
+import torch
+import time
+import datetime
+import threading
+import os
+import requests
+from collections import deque
+import subprocess
+
+from ultralytics import YOLO
+from aiortc import (
+    RTCPeerConnection,
+    RTCSessionDescription,
+    VideoStreamTrack,
+    RTCConfiguration,
+    RTCIceServer
+)
+from aiohttp import web
+import aiohttp_cors
+import av
+
+# =========================
+# CONFIG
+# =========================
+#RTSP_URL = "rtsp://admin:L299411E@10.240.1.214:554/cam/realmonitor?channel=1&subtype=0"
+#RTSP_URL = "D:/cameraAI2/ML/xemay1.mp4"
+RTSP_URL = 1
+CAM_ID = "cam01"    
+CAM_LOCATION = "Đại học Bách Khoa Đà Nẵng"
+
+ALERT_VIDEO_DIR = "../alerts"
+CONTINUOUS_VIDEO_DIR = "../continuous_recordings"
+os.makedirs(ALERT_VIDEO_DIR, exist_ok=True)
+os.makedirs(CONTINUOUS_VIDEO_DIR, exist_ok=True)
+
+ALERT_FRAME_THRESHOLD = 3
+VEHICLE_COUNT_THRESHOLD = 7
+VEHICLE_STATIONARY_TIME = 10
+ALERT_COOLDOWN = {
+    "accident": 20,
+    "fire": 20,
+    "congestion": 30
+}
+PRE_EVENT_SEC = 5
+POST_EVENT_SEC = 5
+
+# Target FPS for recording (Tăng lên 20 để video mượt mà hơn)
+TARGET_FPS = 20
+
+# 24/7 Recording settings
+CONTINUOUS_CLIP_DURATION = 20  # seconds per clip
+print(torch.cuda.is_available())
+device = "cuda" if torch.cuda.is_available() else "cpu"
+ffmpeg_codec = "h264_nvenc" if torch.cuda.is_available() else "libx264"
+
+# =========================
+# MODELS
+# =========================
+model_accident = YOLO("ver3.pt").to(device)
+model_fire = YOLO("fire.pt").to(device)
+model_vehicle = YOLO("person.pt").to(device)
+
+# =========================
+# GLOBAL FRAME
+# =========================
+latest_frame = None
+frame_lock = threading.Lock()
+
+# =========================
+# MANUAL TRIGGER FLAG
+# =========================
+manual_trigger_queue = []
+trigger_lock = threading.Lock()
+
+# =========================
+# CAMERA THREAD
+# =========================
+def camera_loop():
+    global latest_frame
+    
+    # Handle Windows Webcam
+    if isinstance(RTSP_URL, int) or str(RTSP_URL).isdigit():
+        cap = cv2.VideoCapture(int(RTSP_URL), cv2.CAP_DSHOW)
+        is_live = True
+    else:
+        cap = cv2.VideoCapture(RTSP_URL)
+        is_live = str(RTSP_URL).startswith("rtsp://") or str(RTSP_URL).startswith("http://")
+    
+    # Lấy FPS gốc của video để giả lập tốc độ thực (như RTSP)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    if fps <= 0 or fps > 100:
+        fps = 30
+    frame_delay = 1.0 / fps
+
+    while True:
+        start_t = time.time()
+        ret, frame = cap.read()
+        
+        if not ret:
+            if not is_live:
+                # Lặp lại video nếu hết (chỉ áp dụng cho file mp4)
+                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            else:
+                time.sleep(0.01)
+            continue
+
+        with frame_lock:
+            latest_frame = frame.copy()
+            
+        # Giữ tốc độ phát video đúng như thực tế (chỉ cho mp4)
+        if not is_live:
+            elapsed = time.time() - start_t
+            if elapsed < frame_delay:
+                time.sleep(frame_delay - elapsed)
+
+threading.Thread(target=camera_loop, daemon=True).start()
+
+# =========================
+# ALERT STATE
+# =========================
+last_alert_time = {"accident": 0, "fire": 0, "congestion": 0}
+is_active = {"accident": False, "fire": False, "congestion": False}
+acc_counter = fire_counter = 0
+tracked_vehicles = {}
+
+# =========================
+# EVENT RECORDER
+# =========================
+class EventRecorder:
+    def __init__(self, alert_type):
+        self.alert_type = alert_type
+        self.buffer = deque()
+        self.recording = False
+        self.post_left = 0
+
+    def start(self, pre_frames):
+        if self.recording:
+            return
+        self.recording = True
+        self.post_left = int(POST_EVENT_SEC * TARGET_FPS)
+        self.buffer = deque(pre_frames)
+        print(f"🎬 Started recording {self.alert_type}")
+
+    def push(self, frame):
+        if not self.recording:
+            return
+        self.buffer.append(frame)
+        self.post_left -= 1
+        if self.post_left <= 0:
+            # Prevent blocking by copying frames and saving in background
+            frames_to_save = list(self.buffer)
+            self.recording = False
+            self.buffer.clear()
+            threading.Thread(target=self._save_video, args=(frames_to_save,), daemon=True).start()
+
+    def _save_video(self, frames_to_save):
+        if not frames_to_save:
+            return
+            
+        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        path = f"{ALERT_VIDEO_DIR}/{CAM_ID}_{self.alert_type}_{ts}.mp4"
+        
+        requests.post("http://localhost:8000/alert", json={
+            "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "location": CAM_LOCATION,
+            "type": self.alert_type,
+            "video": path,
+            "stream": RTSP_URL
+        })
+        
+        h, w, _ = frames_to_save[0].shape
+
+        cmd = [
+            "ffmpeg",
+            "-y",
+            "-f", "rawvideo",
+            "-pix_fmt", "bgr24",
+            "-s", f"{w}x{h}",
+            "-r", str(TARGET_FPS),
+            "-i", "-",
+            "-an",
+            "-c:v", ffmpeg_codec,
+            "-preset", "fast",
+            "-r", str(TARGET_FPS),
+            "-g", "50",
+            "-profile:v", "baseline",
+            "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart",
+            path
+        ]
+
+        try:
+            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            for f in frames_to_save:
+                proc.stdin.write(f.tobytes())
+            proc.stdin.close()
+            proc.wait()
+            print(f"✅ Alert video saved: {path}")
+        except Exception as e:
+            print(f"❌ Error saving alert video: {e}")
+
+fire_rec = EventRecorder("fire")
+acc_rec = EventRecorder("accident")
+congestion_rec = EventRecorder("congestion")
+
+# =========================
+# 24/7 CONTINUOUS RECORDER
+# =========================
+class ContinuousRecorder:
+    def __init__(self):
+        self.buffer = deque()
+        self.clip_frame_count = int(CONTINUOUS_CLIP_DURATION * TARGET_FPS)
+        self.frame_counter = 0
+        self.is_saving = False
+        self.lock = threading.Lock()
+        
+    def push(self, frame):
+        """Add frame to buffer and save when buffer is full"""
+        with self.lock:
+            self.buffer.append(frame.copy())
+            self.frame_counter += 1
+            
+            # When we have enough frames for one clip, save it
+            if self.frame_counter >= self.clip_frame_count:
+                # Save in background thread to not block main loop
+                threading.Thread(target=self._save_clip, daemon=True).start()
+                self.frame_counter = 0
+            
+    def _save_clip(self):
+        """Save buffered frames to a file"""
+        if self.is_saving or len(self.buffer) == 0:
+            return
+            
+        self.is_saving = True
+        
+        # Create filename with readable timestamp
+        now = datetime.datetime.now()
+        timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+        
+        # Organize by date folders: YYYY-MM-DD/HH/
+        date_folder = now.strftime("%Y-%m-%d")
+        hour_folder = now.strftime("%H")
+        save_dir = os.path.join(CONTINUOUS_VIDEO_DIR, date_folder, hour_folder)
+        os.makedirs(save_dir, exist_ok=True)
+        
+        filename = f"{CAM_ID}_{timestamp}.mp4"
+        path = os.path.join(save_dir, filename)
+        
+        # Get frames to save (copy to avoid issues with concurrent access)
+        with self.lock:
+            frames_to_save = list(self.buffer)[:self.clip_frame_count]
+            
+            # Clear the saved frames from buffer
+            for _ in range(min(self.clip_frame_count, len(self.buffer))):
+                self.buffer.popleft()
+        
+        if len(frames_to_save) == 0:
+            self.is_saving = False
+            return
+            
+        try:
+            h, w, _ = frames_to_save[0].shape
+            
+            cmd = [
+                "ffmpeg",
+                "-y",
+                "-f", "rawvideo",
+                "-pix_fmt", "bgr24",
+                "-s", f"{w}x{h}",
+                "-r", str(TARGET_FPS),
+                "-i", "-",
+                "-an",
+                "-c:v", ffmpeg_codec,
+                "-preset", "fast",
+                "-r", str(TARGET_FPS),
+                "-g", "50",
+                "-profile:v", "baseline",
+                "-pix_fmt", "yuv420p",
+                "-movflags", "+faststart",
+                path
+            ]
+            
+            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, 
+                                   stdout=subprocess.DEVNULL, 
+                                   stderr=subprocess.DEVNULL)
+            
+            for frame in frames_to_save:
+                proc.stdin.write(frame.tobytes())
+            
+            proc.stdin.close()
+            proc.wait()
+            
+            if proc.returncode == 0:
+                print(f"✅ Saved 24/7 clip: {path}")
+            else:
+                print(f"❌ Error saving 24/7 clip: {path}")
+                
+        except Exception as e:
+            print(f"❌ Exception in continuous recording: {e}")
+        finally:
+            self.is_saving = False
+
+continuous_rec = ContinuousRecorder()
+
+# =========================
+# RECORDING THREAD
+# =========================
+global_pre_buffer = deque(maxlen=int(PRE_EVENT_SEC * TARGET_FPS))
+record_lock = threading.Lock()
+
+def recording_loop():
+    frame_time = 1.0 / TARGET_FPS
+    while True:
+        loop_start = time.time()
+        
+        if latest_frame is None:
+            time.sleep(0.01)
+            continue
+            
+        with frame_lock:
+            frame = latest_frame.copy()
+            
+        with record_lock:
+            global_pre_buffer.append(frame)
+            fire_rec.push(frame)
+            acc_rec.push(frame)
+            congestion_rec.push(frame)
+            continuous_rec.push(frame)
+            
+        elapsed = time.time() - loop_start
+        if elapsed < frame_time:
+            time.sleep(frame_time - elapsed)
+
+threading.Thread(target=recording_loop, daemon=True).start()
+
+# =========================
+# YOLO + ALERT LOOP
+# =========================
+def detection_loop():
+    global acc_counter, fire_counter, tracked_vehicles
+    
+    # YOLO loop can run as fast as possible, independent of video recording FPS
+    while True:
+        if latest_frame is None:
+            time.sleep(0.01)
+            continue
+
+        with frame_lock:
+            frame = latest_frame.copy()
+
+        # Check manual triggers
+        with trigger_lock:
+            if manual_trigger_queue:
+                alert_type = manual_trigger_queue.pop(0)
+                now = time.time()
+                
+                print(f"🔔 Manual trigger received: {alert_type}")
+                
+                with record_lock:
+                    safe_pre_buffer = deque(global_pre_buffer)
+                
+                if alert_type == "fire":
+                    last_alert_time["fire"] = now
+                    fire_rec.start(safe_pre_buffer)
+                elif alert_type == "accident":
+                    last_alert_time["accident"] = now
+                    acc_rec.start(safe_pre_buffer)
+                elif alert_type == "congestion":
+                    last_alert_time["congestion"] = now
+                    congestion_rec.start(safe_pre_buffer)
+
+        # Normal detection logic
+        acc = model_accident(frame, classes=[0], conf=0.45, verbose=False)
+        fire = model_fire(frame, conf=0.45, verbose=False)
+        vehicles = model_vehicle.track(frame, classes=[2, 3, 5, 7], conf=0.4, verbose=False, persist=True)
+
+        # Cap counters to prevent unbounded growth. 
+        # Capped at ALERT_FRAME_THRESHOLD + 20 ensures it takes about 2 seconds of clean frames to reset
+        max_counter = ALERT_FRAME_THRESHOLD + 20
+        acc_counter = min(max_counter, acc_counter + 1) if len(acc[0].boxes) > 0 else max(0, acc_counter - 0.5)
+        fire_counter = min(max_counter, fire_counter + 1) if len(fire[0].boxes) > 0 else max(0, fire_counter - 0.5)
+
+        if fire_counter <= 0:
+            is_active["fire"] = False
+        if acc_counter <= 0:
+            is_active["accident"] = False
+
+        now = time.time()
+
+        current_track_ids = set()
+        
+        if fire_counter >= ALERT_FRAME_THRESHOLD and not is_active["fire"] and now - last_alert_time["fire"] > ALERT_COOLDOWN["fire"]:
+            last_alert_time["fire"] = now
+            is_active["fire"] = True
+            with record_lock:
+                fire_rec.start(deque(global_pre_buffer))
+
+        if acc_counter >= ALERT_FRAME_THRESHOLD and not is_active["accident"] and now - last_alert_time["accident"] > ALERT_COOLDOWN["accident"]:
+            last_alert_time["accident"] = now
+            is_active["accident"] = True
+            with record_lock:
+                acc_rec.start(deque(global_pre_buffer))
+            
+        if vehicles[0].boxes.id is not None:
+            stationary_count = 0
+            
+            for box in vehicles[0].boxes:
+                track_id = int(box.id)
+                current_track_ids.add(track_id)
+                
+                if track_id not in tracked_vehicles:
+                    tracked_vehicles[track_id] = now
+                else:
+                    duration = now - tracked_vehicles[track_id]
+                    if duration >= VEHICLE_STATIONARY_TIME:
+                        stationary_count += 1
+                        
+            if stationary_count >= VEHICLE_COUNT_THRESHOLD:
+                if not is_active["congestion"] and now - last_alert_time["congestion"] > ALERT_COOLDOWN["congestion"]:
+                    last_alert_time["congestion"] = now
+                    is_active["congestion"] = True
+                    with record_lock:
+                        congestion_rec.start(deque(global_pre_buffer))
+            else:
+                is_active["congestion"] = False
+                    # Giữ nguyên tracking để không mất dấu, cooldown sẽ tự lo việc không bị spam.
+        
+        tracked_vehicles = {tid: start_time for tid, start_time in tracked_vehicles.items() if tid in current_track_ids}
+
+threading.Thread(target=detection_loop, daemon=True).start()
+
+# =========================
+# WEBRTC
+# =========================
+class WebRTCCamera(VideoStreamTrack):
+    async def recv(self):
+        pts, time_base = await self.next_timestamp()
+        while latest_frame is None:
+            await asyncio.sleep(0.01)
+
+        with frame_lock:
+            frame = latest_frame.copy()
+
+        video = av.VideoFrame.from_ndarray(frame, format="bgr24")
+        video.pts = pts
+        video.time_base = time_base
+        return video
+
+async def offer(request):
+    params = await request.json()
+    pc = RTCPeerConnection(
+        RTCConfiguration([RTCIceServer(urls=["stun:stun.l.google.com:19302"])])
+    )
+    pc.addTrack(WebRTCCamera())
+
+    await pc.setRemoteDescription(
+        RTCSessionDescription(params["sdp"], params["type"])
+    )
+    answer = await pc.createAnswer()
+    await pc.setLocalDescription(answer)
+
+    return web.json_response({
+        "sdp": pc.localDescription.sdp,
+        "type": pc.localDescription.type
+    })
+
+# =========================
+# MANUAL TRIGGER ENDPOINT
+# =========================
+async def manual_trigger(request):
+    """Receive manual trigger from alert_server"""
+    try:
+        params = await request.json()
+        alert_type = params.get("alert_type")
+        
+        if alert_type not in ["fire", "accident", "congestion"]:
+            return web.json_response({
+                "status": "error",
+                "message": "Invalid alert type"
+            }, status=400)
+        
+        with trigger_lock:
+            manual_trigger_queue.append(alert_type)
+        
+        print(f"✅ Manual trigger queued: {alert_type}")
+        
+        return web.json_response({
+            "status": "ok",
+            "message": f"Manual {alert_type} alert triggered"
+        })
+    except Exception as e:
+        return web.json_response({
+            "status": "error",
+            "message": str(e)
+        }, status=500)
+
+# =========================
+# HTTP SERVER
+# =========================
+app = web.Application()
+cors = aiohttp_cors.setup(app, defaults={
+    "*": aiohttp_cors.ResourceOptions(
+        allow_headers="*",
+        allow_methods="*",
+        allow_credentials=True
+    )
+})
+
+async def mjpeg_handler(request):
+    async def generate():
+        while True:
+            if latest_frame is not None:
+                with frame_lock:
+                    frame = latest_frame.copy()
+                ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
+                if ret:
+                    yield b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n'
+            await asyncio.sleep(0.1)
+
+    response = web.StreamResponse(
+        status=200,
+        reason='OK',
+        headers={
+            'Content-Type': 'multipart/x-mixed-replace;boundary=frame',
+        }
+    )
+    await response.prepare(request)
+    async for chunk in generate():
+        await response.write(chunk)
+    return response
+
+resource = cors.add(app.router.add_resource("/offer"))
+cors.add(resource.add_route("POST", offer))
+
+mjpeg_resource = cors.add(app.router.add_resource("/mjpeg"))
+cors.add(mjpeg_resource.add_route("GET", mjpeg_handler))
+
+trigger_resource = cors.add(app.router.add_resource("/manual_trigger"))
+cors.add(trigger_resource.add_route("POST", manual_trigger))
+
+web.run_app(app, port=8080)

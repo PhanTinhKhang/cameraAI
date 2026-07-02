@@ -1,0 +1,292 @@
+THUYẾT MINH SẢN PHẨM SÁNG TẠO
+------------------
+      ĐĂNG KÝ THÔNG TIN SẢN PHẨM DỰ THI
+      THÔNG TIN TÁC GIẢ (NHÓM TÁC GIẢ)
+      GIỚI THIỆU VỀ SẢN PHẨM
+Ý TƯỞNG
+Lý do lựa chọn nghiên cứu và phát triển sản phẩm
+	Từ thực trạng gia tăng phương tiện, áp lực lên hạ tầng giao thông và nguy cơ tai nạn tại nhiều tuyến đường, đặc biệt ở các nút giao có tổ chức giao thông phức tạp, có thể thấy nhu cầu giám sát và cảnh báo sớm rủi ro là yêu cầu vô cùng thiết thực hiện nay. Tuy nhiên, tại các khu vực nông thôn và ngoại ô, công tác giám sát vẫn còn hạn chế do thiếu thiết bị, thiếu hạ tầng kết nối và phụ thuộc vào phương pháp thủ công, dẫn đến khả năng phát hiện tình huống nguy hiểm và phản ứng kịp thời chưa đáp ứng yêu cầu thực tiễn. Trong khi đó, các giải pháp giám sát thông minh tại đô thị lớn tuy đạt hiệu quả cao nhưng thường có chi phí đầu tư – vận hành lớn, yêu cầu hạ tầng đồng bộ và khó mở rộng triển khai tại những khu vực còn hạn chế về điều kiện kỹ thuật.
+Trong bối cảnh Cách mạng công nghiệp 4.0, trí tuệ nhân tạo và hệ thống nhúng mở ra hướng tiếp cận khả thi để xây dựng các giải pháp giám sát theo thời gian thực với chi phí hợp lý. Việc tích hợp camera và cảm biến trên nền tảng vi điều khiển cho phép thu thập dữ liệu trực tiếp tại hiện trường, xử lý nhanh nhằm nhận diện phương tiện, phát hiện hành vi hoặc tình huống có nguy cơ xảy ra tai nạn, đồng thời phát cảnh báo bằng các hình thức trực quan như đèn, còi và thông báo trên giao diện giám sát. Cách tiếp cận này hướng tới mục tiêu tối ưu về kích thước, mức tiêu thụ năng lượng và khả năng triển khai linh hoạt, phù hợp với các điểm giao thông chưa được trang bị hệ thống giám sát hiện đại.
+Với định hướng đó, nhóm quyết định lựa chọn và phát triển sản phẩm: “Hệ thống giám sát thông minh phát hiện và thông tin về sự cố giao thông”.
+Ý nghĩa của sản phẩm
+Từ góc độ nghiên cứu STEM, sản phẩm sáng tạo dành cho học sinh, việc thiết kế một hệ thống nhúng giám sát và cảnh báo kịp thời khi tai nạn giao thông xảy ra có ý nghĩa thiết thực. Hệ thống này hướng tới việc phát hiện sớm tai nạn, cảnh báo cho các phương tiện xung quanh và gửi thông tin đến lực lượng chức năng nhằm giảm thiểu hậu quả do tai nạn giao thông gây ra. Đồng thời, sản phẩm còn góp phần làm rõ khả năng ứng dụng hệ thống nhúng - AI trong giải quyết các vấn đề thực tiễn của xã hội.
+Mục tiêu sản phẩm
+3.1. Mục tiêu chung:
+Phát triển hệ thống giám sát giao thông thông minh giải pháp công nghệ cao, chủ yếu dùng camera thông minh kết hợp trí tuệ nhân tạo (AI) để quan sát, phân tích tình hình giao thông nhằm  hỗ trợ cơ quan chức năng xử lý nhanh, cung cấp bằng chứng các vấn đề về giao thông trong quá trình tham gia giao thông và nâng cao ý thức người tham gia giao thông, xây dựng hệ thống giao thông thông minh, chi phí thấp, sử dụng linh hoạt nhằm giảm thiểu hậu quả tai nạn giao thông.
+3.2  Mục tiêu cụ thể:
+- Thiết kế và chế tạo mô hình giám sát giao thông hoạt động tại các nơi là điểm đen về giao thông.
+- Phát triển hệ thống camera giám sát phát hiện kịp thời các sự kiện bất thường như tai nạn, cháy, tụ tập đông người.
+- Hỗ trợ xử lý: Cung cấp bằng chứng hình ảnh/video xác thực cho điều tra và xử lý vi phạm
+
+TỔNG QUAN
+Thực trạng
+Tai nạn giao thông đường bộ là vấn đề xã hội nghiêm trọng, gây thiệt hại lớn về người và tài sản, ảnh hưởng đến phát triển kinh tế – xã hội và chất lượng cuộc sống. Tại Việt Nam, mặc dù số vụ tai nạn có xu hướng giảm, nhưng tỷ lệ tử vong và thương tật vẫn cao, cho thấy công tác đảm bảo an toàn giao thông còn nhiều thách thức. Nhiều nghiên cứu chỉ ra rằng tai nạn giao thông chủ yếu xuất phát từ các yếu tố con người, phương tiện, hạ tầng, môi trường và quản lý giao thông, trong đó yếu tố con người và sự thiếu giám sát, cảnh báo kịp thời đóng vai trò quan trọng. Các biện pháp truyền thống như tuần tra, tuyên truyền tuy có hiệu quả nhất định nhưng còn hạn chế về quy mô, thời gian và chi phí.
+Trước yêu cầu đó, việc ứng dụng công nghệ tiên tiến – đặc biệt là hệ thống nhúng, cảm biến và trí tuệ nhân tạo – trong giám sát và cảnh báo giao thông trở thành xu hướng phát triển tất yếu của giao thông thông minh. Trên thế giới, nhiều quốc gia đã triển khai hệ thống giám sát thông minh có khả năng phát hiện tai nạn theo thời gian thực, cảnh báo va chạm và hỗ trợ cứu nạn. Tuy nhiên, tại Việt Nam, các hệ thống này vẫn chủ yếu giới hạn ở quy mô lớn, chi phí cao và ít được triển khai tại khu vực có nguy cơ tai nạn cao như đường liên khu vực, khu dân cư hay trường học.
+Hệ thống giao thông thông minh hiện nay
+2.1. Tình hình trên Thế giới
+	Trên thế giới, việc tích hợp Trí tuệ nhân tạo (AI) vào hạ tầng giao thông đã trở thành tiêu chuẩn cốt lõi trong xây dựng Thành phố thông minh (Smart City). Các quốc gia dẫn đầu như Trung Quốc, Singapore và Mỹ đã triển khai các hệ thống dựa trên nền tảng học sâu (Deep Learning) để phân tích hành vi giao thông theo thời gian thực. Xu hướng hiện nay tập trung vào việc sử dụng các mô hình nhận diện vật thể tiên tiến (như dòng YOLO) để phát hiện tức thì các sự cố. Tại các đô thị lớn, công nghệ Edge AI (xử lý tại biên) được ưu tiên để giảm thiểu độ trễ trong việc cảnh báo cháy nổ hoặc tai nạn nghiêm trọng. Các hệ thống này không chỉ dừng lại ở việc đếm xe mà còn có khả năng phân tích mật độ để cảnh báo sớm tình trạng tụ tập đông người gây mất an ninh trật tự.
+2.2. Tình hình tại Việt Nam
+	Tại Việt Nam, Chính phủ đang đẩy mạnh đề án Chuyển đổi số quốc gia, trong đó giám sát giao thông thông minh là ưu tiên hàng đầu tại các thành phố lớn như Hà Nội, TP. Hồ Chí Minh và Đà Nẵng. Các Trung tâm Điều hành Thông minh (IOC) đã bắt đầu ứng dụng AI để tự động phát hiện vi phạm và sự cố.
+Cơ sở lý thuyết về công nghệ liên quan
+	Đề tài được phát triển dựa trên sự kết hợp của nhiều công nghệ hiện đại trong lĩnh vực IoT và AI:
+Công nghệ IoT (Internet of Things):Cho phép các thiết bị giao thông kết nối và trao đổi dữ liệu không dây theo thời gian thực.
+Camera AI: thu nhận hình ảnh của các làn đường, kiểm tra phát hiện các yếu tố bất thường như cháy, tụ tập đông người và tai nạn giao thông.
+Những công nghệ này không chỉ đơn giản hóa mô hình mà còn tạo nền tảng cho việc mở rộng ra hệ thống giao thông đô thị thực tế.
+Khoảng trống hiện nay
+- Các mô hình hiện có chủ yếu tập trung tối ưu hóa lưu lượng phương tiện, trong khi vấn đề về tai nạn vẫn còn nhiều hạn chế.
+- Các giải pháp giao thông thông minh trong nước chưa tích hợp thiết bị hỗ trợ nhận diện tai nạn, cháy và tụ tập đông người.
+Hướng tiếp cận của nhóm
+Trên cơ sở các khoảng trống đã xác định, nhóm lựa chọn hướng tiếp cận theo phương châm lấy tai nạn giao thông vào thời điểm ít phương tiện và người tham gia giao thông làm trung tâm, trong đó hệ thống được thiết kế nhằm hỗ trợ tối đa cho việc cảnh báo tai nạn, hỗ trợ điều tra.
+Cụ thể:
+- Tăng cường khả năng tương tác giữa người dùng và hệ thống thông qua giao diện web - bản đồ hiển thị vị trí có camera giám sát thông báo sự cố tức thì.
+- Thiết kế hệ thống giám sát và thông báo về tai nạn theo thời gian thực, phản hồi dựa trên dữ liệu từ thiết bị hỗ trợ người dùng và thông tin nhận dạng phương tiện từ camera AI.
+- Ứng dụng công nghệ IoT và xử lý hình ảnh theo hướng tối ưu – khả thi, đảm bảo hệ thống hoạt động ổn định, độ trễ thấp và có khả năng mở rộng trong tương lai.
+Hướng tiếp cận này không chỉ khắc phục các hạn chế của những mô hình hiện tại mà còn phù hợp với yêu cầu thực tiễn, góp phần nâng cao tính nhân văn và an toàn trong giao thông đô thị.
+
+      MÔ TẢ SẢN PHẨM
+CHỨC NĂNG CHÍNH CỦA SẢN PHẨM:
+Trên cơ sở nghiên cứu, đánh giá lý thuyết và thực tiễn, nhóm chúng em xác định giải pháp sau:
+Chức năng  1: Thiết kế chế tạo hệ thống giám sát thông minh:
+- Hệ thống kết hợp giữa camera giám sát và bộ xử lý hình ảnh theo thời gian thực. 
+- Hệ thống phản hồi khi phát hiện cháy, tai nạn và tụ tập đông người.
+Chức năng  2: Đèn chiếu sáng ban đêm kết hợp nguồn lưu trữ:
+- Hệ thống đèn chiếu sáng ban đêm.
+- Nguồn lưu trữ cung cấp cho đèn và camera giám sát thời gian, nhằm cung cấp nguồn liên tục lên đến 7 ngày
+Chức năng  3: Trang web bản đồ giám sát:
+- Bản đồ hiển thị các nơi có camera giám sát và thông báo tức thời nếu phát hiện các trường hợp tai nạn, cháy và tụ tập đông người
+- Nhờ kết hợp đồng thời phần cứng, phần mềm và tương tác người dùng, mô hình thể hiện được tính linh hoạt, nhân văn và khả năng ứng dụng thực tế trong việc xây dựng thành phố thông minh.
+Video demo hoạt động sản phẩm đăng tải tại địa chỉ: https://tinyurl.com/democameraaiPTK
+Mã nguồn phần mềm sản phẩm được đăng tải tại địa chỉ: https://tinyurl.com/phantinhkhangcameraai
+
+THIẾT KẾ SẢN PHẨM
+Thiết kế phần cứng
+Hệ thống camera thông minh gồm hai thành phần chính:
+ 	-  Hệ thống đèn chiếu sáng kết hợp camera giám sát thông minh 
+ 	-  Trang web hiển thị bản đồ trên máy tính.
+1.1. Hệ thống đèn, camera giám sát
+Hệ thống được đặt tại các nơi là điểm đen về giao thông hoặc các ngã tư nơi có thiết bị giám sát giao thông, nhận thông tin từ camera AI và báo về nơi giám sát để giải quyết các vấn đề kịp thời.
+Các thành phần chính:
++ Đèn chiếu sáng tự động.
++ Camera: thu thập thông báo tai nạn, cháy và tụ tập đông người.
+
+Hình 1. Hình ảnh camera
++ Bộ xử lý hình ảnh: máy tính nhận hình ảnh và video từ camera để nhận dạng tai nạn.
+
+Hình 2. Hình ảnh nhận được từ bộ xử lý
+Nguồn cung cấp: Bộ lưu trữ nguồn sạc tự động bằng NLMT nhằm cung cấp nguồn cho toàn bộ hệ thống.
+Mô hình được xây dựng như sau:
+ - Mô hình được thiết kế theo trụ đèn giao thông tại khu vực Đà Nẵng:
+
+Hình 3. Hình ảnh trụ đèn thực tế
+- Bên trên là tấm năng lượng mặt trời:
+
+Hình 4. Hình ảnh tấm pin năng lượng mặt trời
+- Phía dưới tấm pin năng lượng mặt trời là camera AI:
+
+Hình 5. Hình ảnh camera trên mô hình
+- Ở giữa là đèn chiếu sáng tự động
+
+Hình 6. Hình ảnh đèn chiếu sáng trên mô hình
+- Đằng sau đèn sẽ có nguồn lưu trữ:
+
+Hình 7. Hình ảnh khối pin trên mô hình
+
+Lắp ráp phần cứng:
+
+Hình 8.  Hình ảnh tổng quan mô hình
+1.2. Trang web giám sát
+Đóng vai trò giao diện tương tác thông minh giữa người dùng hệ thống giao thông. 
+
+Hình 9. Hình ảnh giao diện web
+
+Chức năng:
+Hiển thị bản đồ nơi có các thiết bị giám sát. Tại các nơi có thiết bị giám sát, người giám sát có thể mở để xem video trực tiếp.
+Bên trái là danh sách các sự kiện đã xảy ra như tai nạn, cháy và tụ tập đông người, cho phép người dùng giám sát, nhận thông báo trực tiếp.
+Sơ đồ kết nối hệ thống
+Hệ thống được thiết kế gồm:
+
+Hình 10. Hình ảnh sơ đồ khối hệ thống
+Mô tả hoạt động:
+- Hệ thống cung cấp và lưu trữ năng lượng
+Hệ thống sử dụng năng lượng sạch để duy trì hoạt động độc lập:
++ Tấm pin năng lượng mặt trời: Hấp thụ ánh sáng mặt trời để chuyển hóa thành điện năng.
++ Lưu trữ năng lượng cho camera: Một phần điện năng được tích trữ vào bộ pin riêng để cấp nguồn liên tục cho camera giám sát.
++ Lưu trữ năng lượng cho đèn đường: Phần điện năng còn lại được tích trữ vào bộ pin thứ hai để phục vụ cho hệ thống chiếu sáng.
+- Hệ thống chiếu sáng và thu thập hình ảnh
+Hai thiết bị đầu cuối thực hiện các nhiệm vụ riêng biệt:
++ Đèn tự động sáng vào ban đêm: Sử dụng năng lượng dự trữ để tự động chiếu sáng khu vực giám sát khi điều kiện ánh sáng yếu, giúp camera hoạt động hiệu quả hơn.
++ Camera: Thực hiện nhiệm vụ ghi hình và thu thập dữ liệu hình ảnh trực tiếp từ hiện trường.
+Bộ xử lý hình ảnh (sử dụng YOLOv11) 
+Bộ xử lý hình ảnh chạy mô hình YOLOv11 (You Only Look Once version 11) – một mô hình nhận dạng đối tượng theo thời gian thực (real-time object detection). YOLOv11 sẽ:
++ Xử lý video nhận được từ camera theo thời gian thực.
+	+ Phát hiện phân loại tai nạn, cháy, tụ tập đông người
++ Kết quả được gửi đến giao diện web trên màn hình.
+Giao diện web
+Giao diện web: Kết quả sau khi xử lý được truyền đến giao diện web để người quản lý có thể theo dõi trực tuyến, nhận cảnh báo và đưa ra quyết định xử lý kịp thời.
+Lưu đồ thuật toán
+
+Hình 11. Lưu đồ thuật toán
+Giải thích lưu đồ thuật toán:
+- Hệ thống khởi động, kết nối RTSP để lấy video từ camera về trung tâm.
+- Video được stream trực tiếp lên web cho người giám sát và song song chạy OpenCV để phân tích.
+- Hệ thống luôn ghi đệm 5 giây video gần nhất.
+- OpenCV kiểm tra tai nạn, cháy hoặc tụ tập đông người trên luồng video.
+- Không có bất thường thực hiện xóa giây đầu tiên của video, tiếp tục ghi giây thứ 5 để đảm bảo luôn tồn tại 5 giây video gần nhất.
+- Nếu có bất thường xảy ra, hệ thống thực hiện ghi thêm 5 giây sau sự kiện, tạo video 10 giây và thực hiện tạo cảnh báo tương ứng.
+- Cảnh báo và video được gửi lên server, hiển thị trên web, người giám sát có thể chọn cảnh báo để xem lại video.
+
+KẾT QUẢ VẬN HÀNH THỬ VÀ THẢO LUẬN
+Tiêu chí đánh giá
+Hệ thống giám sát giao thông thông minh được đánh giá dựa trên các tiêu chí định lượng và định tính. Dữ liệu thử nghiệm được xây dựng từ các video tình huống thực tế và mô phỏng, trong đó mỗi mẫu đối tượng sử dụng 5 video khác nhau, được lặp lại nhiều lần nhằm đảm bảo tính khách quan và ổn định của kết quả.
+Cụ thể:	
+- Độ chính xác phát hiện nguy cơ (%):
+Hệ thống được thử nghiệm trên 3 nhóm đối tượng chính, mỗi nhóm gồm 5 video tình huống, mỗi video được chạy lặp lại 5 lần.
+Tổng số lượt đánh giá:
+
+- Kết quả:
++ Số lượt phát hiện đúng: 73/75
++ Độ chính xác trung bình đạt: 97.3%
+- Thời gian phản hồi của hệ thống (giây):
+Thời gian phản hồi được đo từ lúc sự cố xuất hiện trong video đến khi cảnh báo hiển thị trên giao diện web.
++ Thời gian phản hồi trung bình: 1,9 giây
++ Thời gian phản hồi nhanh nhất: 1,3 giây
++ Thời gian phản hồi chậm nhất: 3,0 giây
+- Tính ổn định của hệ thống:
+Hệ thống được vận hành liên tục trong 72 giờ, xử lý lặp lại nhiều video tình huống.
++ Không xảy ra lỗi treo hệ thống
++ Không mất kết nối camera
++ Tỷ lệ hoạt động ổn định đạt khoảng 97–98%
+- Khả năng mở rộng và ứng dụng thực tế:
+Hệ thống cho phép tái sử dụng tập video và mở rộng thêm camera mà không ảnh hưởng đến thuật toán.
++ Có thể mở rộng lên 40-50 camera
++ Thời gian cấu hình thêm mỗi camera: < 10 phút
+Cách tính và xử lý số liệu
+Cách xây dựng dữ liệu thử nghiệm:
+- Mỗi đối tượng nhận diện (Fire, Car_Accident, person) sử dụng 5 video tình huống khác nhau
+- Mỗi video được chạy lặp lại 5 lần trong các thời điểm khác nhau
+- Kết quả cuối cùng là trung bình cộng của các lần chạy
+Công thức tính độ chính xác:
+
+Áp dụng thực nghiệm:
+
+Bảng 1. Kết quả kiểm thử mô hình AI
+Đánh giá định tính
+Song song với đánh giá định lượng, nhóm tiến hành đánh giá định tính dựa trên quan sát thực tế và phản hồi người dùng:
+Bảng 2. Kết quả khảo sát thực tế
+
+Bảng 3. Kết quả thử nghiệm các tính năng cốt lõi của hệ thống
+Đánh giá độ chính xác của hệ thống trong các điều kiện thời tiết khác nhau 
+4.1. Mục đích đánh giá 
+Mục tiêu của nội dung này nhằm đánh giá mức độ ảnh hưởng của các điều kiện thời tiết khác nhau đến độ chính xác và khả năng hoạt động ổn định của hệ thống giám sát giao thông thông minh. 
+Trong thực tế triển khai, hệ thống phải làm việc trong nhiều môi trường thời tiết phức tạp như nắng gắt, mưa, sương mù và ban đêm, do đó việc kiểm chứng độ tin cậy trong các điều kiện này là cần thiết. 
+4.2. Dữ liệu và phương pháp thử nghiệm 
+Các điều kiện thời tiết được xem xét bao gồm: 
+Với mỗi điều kiện thời tiết: 
+	- Sử dụng 5 video tình huống khác nhau 
+	- Mỗi video được chạy lặp lại 5 lần 
+	- Tổng số lượt đánh giá cho mỗi điều kiện: 25 lượt 
+Các đối tượng được đánh giá gồm: 
+	- Fire o Car_Accident 
+	- Person 
+Kết quả độ chính xác được tính dựa trên số lượt phát hiện đúng trên tổng số lượt đánh giá. 
+
+4.3. Kết quả đánh giá định lượng 
+Bảng 4. Độ chính xác của hệ thống theo điều kiện thời tiết
+Độ chính xác trung bình trong các điều kiện thời tiết đạt khoảng: 94% 
+4.4. Phân tích kết quả 
+Trong điều kiện thời tiết nắng, hệ thống hoạt động ổn định nhất, độ chính xác đạt 100%, nhờ hình ảnh rõ nét và độ tương phản cao. 
+Ở điều kiện trời mưa, độ chính xác giảm nhẹ do nhiễu hình ảnh, giọt mưa và phản xạ ánh sáng, tuy nhiên hệ thống vẫn duy trì độ chính xác trên 90%. 
+Với sương mù nhẹ, độ chính xác giảm xuống 88%, nguyên nhân chính là độ tương phản thấp và tầm nhìn bị hạn chế, ảnh hưởng đến khả năng trích xuất đặc trưng của mô hình YOLO. 
+Trong điều kiện ban đêm, mặc dù ánh sáng yếu, hệ thống vẫn đạt độ chính xác 96%, cho thấy khả năng thích nghi tốt khi kết hợp camera hồng ngoại và mô hình học sâu. 
+4.5. Nhận xét và đánh giá tổng thể 
+Hệ thống cho thấy khả năng hoạt động ổn định trong nhiều điều kiện thời tiết khác nhau. 
+Độ chính xác không dưới 88% ngay cả trong điều kiện bất lợi nhất (sương mù).
+So sánh hiệu quả trước và sau khi áp dụng hệ thống
+ 	Bảng 5: Đánh giá hiệu quả trước và sau khi áp dụng hệ thống
+
+KẾT LUẬN
+Qua quá trình nghiên cứu, thiết kế, chế tạo và thử nghiệm, nhóm đã hoàn thiện sản phẩm “Hệ thống giám sát thông minh phát hiện và thông tin về sự cố giao thông” hoạt động ổn định và có tính ứng dụng cao trong thực tiễn.
+Tính mới cốt lõi của dự án nằm ở việc không sử dụng các giải pháp ghép nối rời rạc có sẵn, mà xây dựng một hệ sinh thái giám sát và cảnh báo toàn diện, khép kín. Sự sáng tạo này được thể hiện rõ nét qua 4 hướng đột phá sau:
+Hệ thống đã đạt được các mục tiêu đề ra:
+	- Về phần cứng: Thiết kế thành công trạm giám sát tự vận hành bằng năng lượng mặt trời, tích hợp hệ thống chiếu sáng tự động và camera ghi hình liên tục.
+- Về phần mềm: Xây dựng được mô hình AI dựa trên thuật toán YOLO có khả năng nhận diện chính xác  lớp đối tượng trọng yếu: Lửa (Fire), Tụ tập đông người (People) và Tai nạn (Car_Accident).
+- Về quản lý dữ liệu: Ứng dụng thành công quy trình gán nhãn tự động (Auto-Labeling) để xây dựng bộ dữ liệu hình ảnh quy mô lớn, giúp tối ưu hóa thời gian và nguồn lực huấn luyện.
+- Về hiển thị: Phát triển giao diện Web hỗ trợ theo dõi trực tuyến và tiếp nhận cảnh báo sự cố tức thì từ hệ thống xử lý.
+Giá trị lý luận, khoa học và thực tiễn:
+- Giá trị lý luận: Sản phẩm góp phần bổ sung cơ sở lý luận về ứng dụng trí tuệ nhân tạo trong giám sát, phân tích và xử lý các tình huống giao thông nguy hiểm trong điều kiện thực tế của đô thị Việt Nam, làm rõ khả năng kết hợp giữa phát hiện sớm nguy cơ và phát hiện sự cố sau khi xảy ra, từ đó đề xuất mô hình tiếp cận toàn diện hơn trong quản lý giao thông.
+Bên cạnh đó, sản phẩm đóng góp vào việc xây dựng phương pháp thu thập, xử lý và lưu trữ dữ liệu video giao thông phục vụ nghiên cứu, đánh giá rủi ro và cải tiến thuật toán AI, tạo tiền đề cho các giải pháp chuyên sâu về giao thông thông minh và đô thị số.
+- Giá trị khoa học: Sản phẩm đã ứng dụng các công nghệ tiên tiến nhất hiện nay như Học sâu (Deep Learning), Năng lượng tái tạo và Internet vạn vật (IoT) để giải quyết bài toán giao thông. Việc kết hợp giữa dữ liệu mẫu (Seed Data) và gán nhãn tự động là một hướng tiếp cận hiện đại trong xây dựng mô hình AI.
+- Giá trị thực tiễn: Về mặt thực tiễn, hệ thống giúp phát hiện và thông báo kịp thời các tình huống giao thông nguy hiểm như tai nạn, ùn tắc, cháy nổ hoặc sự cố bất thường, hỗ trợ trung tâm điều phối giao thông nhanh chóng triển khai các biện pháp xử lý, giảm thiểu thiệt hại và hạn chế ùn tắc lan rộng. Dữ liệu video được lưu trữ có hệ thống giúp cơ quan chức năng phân tích nguyên nhân sự cố, đánh giá hiệu quả tổ chức giao thông và phục vụ công tác quản lý.
+Ngoài ra, sản phẩm góp phần nâng cao hiệu quả giám sát giao thông, giảm phụ thuộc vào giám sát thủ công, đồng thời tạo nền tảng cho việc xây dựng hệ thống giao thông thông minh, hiện đại và bền vững, có khả năng mở rộng và nhân rộng cho các đô thị khác trong tương lai.
+
+ĐÁNH GIÁ SẢN PHẨM
+Tiềm năng ứng dụng
+Sản phẩm có khả năng ứng dụng vào thực tế sâu sắc và rộng rãi, có tiềm năng phát triển nhằm hoàn thiện và nâng cao hiệu quả của hệ thống trong tương lai:
+1.1. Khả năng lắp đạt dễ dàng: Tiến hành khảo sát và đề xuất lắp đặt hệ thống ở các vị trí phù hợp trong thực tế, sản phẩm có thể được lắp đặt nhanh chóng, dễ dàng và thuận tiện, không yêu cầu hệ thống điện lưới và có thể tái sử dụng các hạ tầng có sẵn như cột đèn, trụ cảnh báo, camera giao thông hiện có.
+1.2. Kết nối liên thông: Hệ thống có thể được tích hợp vào mạng lưới Thành phố thông minh (Smart City), cho phép chia sẻ dữ liệu với các đơn vị cứu hộ, cứu hỏa và y tế để phối hợp xử lý sự cố nhanh nhất.
+1.3. Định hướng mở rộng tính năng thông minh: Phát triển thêm chức năng phân tích mật độ giao thông và nhận diện hành vi tụ tập đông người để hỗ trợ công tác quản lý an ninh trật tự đô thị.
+1.4. Khả năng hoàn thiện hệ sinh thái: Xây dựng ứng dụng trên điện thoại di động (Mobile App) để gửi thông báo đẩy (Push Notification) trực tiếp cho lực lượng chức năng và người dân khi có sự cố xảy ra.
+Tính mới của sản phẩm
+
+2.1. Tính mới về trí tuệ nhân tạo (AI)
+Mô hình nhận diện chuyên sâu: Thay vì chỉ dùng AI để đếm lưu lượng xe, dự án ứng dụng thuật toán học sâu YOLOv11 để phân tích thời gian thực và phát hiện tức thì 3 sự cố trọng yếu: Tai nạn (Car_Accident), Cháy nổ (Fire), và Tụ tập đông người (Person).
+Ứng dụng quy trình Auto-Labeling: Nhóm nghiên cứu đã sáng tạo ứng dụng thành công quy trình gán nhãn tự động (Auto-Labeling) để xây dựng bộ dữ liệu huấn luyện gồm lượng lớn hình ảnh, giúp tối ưu hóa tối đa thời gian và nguồn lực so với việc gán nhãn thủ công truyền thống.
+Mô hình AI cho thấy khả năng thích nghi mạnh mẽ khi đạt độ chính xác trung bình 97,3% và hoạt động ổn định ngay cả trong điều kiện thời tiết khắc nghiệt (đạt độ chính xác từ 88% trở lên khi trời mưa, sương mù hoặc ban đêm) .
+
+2.2. Tính mới về thuật toán phần mềm
+Thuật toán "Bộ đệm lưu trữ vòng lặp: Nếu không có sự cố, hệ thống liên tục xóa khung hình cũ để nạp khung hình mới. Khi AI bắt được sự kiện bất thường, nó không chỉ cảnh báo mà tự động ghi tiếp 5 giây sau đó, đóng gói (bằng FFmpeg) thành một đoạn video bằng chứng dài đúng 10 giây (5 giây trước và 5 giây sau sự cố). Điều này giúp các cơ quan chức năng xem lại được chính xác khoảnh khắc trước khi xảy ra tai nạn, một tính năng vô cùng giá trị mà ít hệ thống camera thông thường làm được.
+Tốc độ cảnh báo siêu tốc: Kiến trúc Backend Server sử dụng FastAPI và công nghệ WebSocket duy trì kết nối hai chiều liên tục. Nhờ vậy, dữ liệu cảnh báo không bị trễ do phải "tải lại trang" mà được "phát sóng" (broadcast) thẳng lên màn hình người dùng, mang lại thời gian phản hồi siêu tốc trung bình chỉ 1,9 giây . 
+Để hệ thống không bị "nhiễu" và spam thông báo, logic phần mềm cài đặt các ngưỡng lọc rất chặt chẽ. Hệ thống chỉ xác nhận sự cố cháy nổ/tai nạn khi phát hiện liên tục trong ít nhất 3 khung hình (ALERT_FRAME_THRESHOLD = 3), và đám đông khi trên 10 người (PERSON_THRESHOLD = 10) . Ngoài ra, thuật toán có cơ chế "Cooldown" (thời gian chờ) để tránh gửi trùng lặp một sự cố nhiều lần
+
+2.3. Tính mới về thiết kế phần cứng: Trạm giám sát tự hành chi phí thấp và năng lượng xanh
+Giải pháp độc lập năng lượng: Khác với các hệ thống camera đô thị đắt đỏ phụ thuộc hoàn toàn vào điện lưới, hệ thống được thiết kế dưới dạng trạm giám sát tự hành sử dụng tấm pin năng lượng mặt trời.
+Duy trì hoạt động liên tục: Hệ thống sở hữu bộ pin lưu trữ chuyên biệt, cho phép thiết bị hoạt động độc lập 24/7 và có khả năng duy trì lên đến 7 ngày trong điều kiện không có nắng.
+Tối ưu hóa môi trường giám sát: Khả năng lắp đặt dễ dàng, tiện lợi, tích hợp hệ thống đèn LED tự động kích hoạt chiếu sáng vào ban đêm, giúp camera ghi hình rõ nét trong điều kiện thiếu sáng. Đặc điểm này mang lại tính linh hoạt cao, chi phí thấp, dễ dàng triển khai tại các "điểm đen" ngoại ô hoặc nông thôn chưa có hạ tầng đồng bộ.
+2.4. Tính mới về hướng tiếp cận và phương thức quản lý thực tiễn
+Mô hình vận hành: Giao diện Dashboard (Frontend) được thiết kế hiện đại bằng ReactJS, tích hợp Bản đồ số và trình phát video trực tiếp công nghệ cao WebRTC với độ trễ cực thấp. Cấu trúc mã nguồn được thiết kế dạng module phân tán, tách biệt giữa luồng xử lý AI và luồng giao diện. Thuật toán giới hạn ở Web cũng chủ động chỉ kết xuất 5 cảnh báo mới nhất để chống quá tải bộ nhớ trình duyệt . Nhờ kiến trúc linh hoạt này, hệ thống có khả năng dễ dàng mở rộng lên tới 40-50 camera giám sát trên cùng một bản đồ mà không làm thay đổi hay suy giảm hiệu năng thuật toán cốt lõi, thời gian cấu hình thêm mỗi camera chỉ dưới 10 phút
+Chuyển đổi phương thức quản lý: Dự án làm thay đổi cách thức quản lý an toàn giao thông từ việc "thụ động chờ người dân báo tin" sang "chủ động phát hiện tự động, liên tục bằng camera AI".
+Lấp đầy khoảng trống giám sát: Hướng tiếp cận mang tính nhân văn sâu sắc khi đặt trọng tâm vào việc cảnh báo tai nạn tại những thời điểm ít phương tiện và ở những khu vực vắng người qua lại. Qua đó, hệ thống cung cấp bằng chứng rõ ràng (video/hình ảnh), hỗ trợ cơ quan chức năng điều tra, xử lý vi phạm một cách chủ động và chính xác.
+Khả năng tích hợp liên thông mạng lưới Thành phố thông minh (Smart City): Nhờ được viết bằng các công nghệ tiêu chuẩn của các nền tảng lớn (Backend API), dữ liệu cảnh báo của nền tảng này hoàn toàn có thể kết nối liên thông, chia sẻ trực tiếp với mạng lưới điều hành Thành phố thông minh, giúp các đơn vị cứu hộ, y tế phối hợp xử lý sự cố nhanh nhất có thể.
+
+YÊU CẦU ĐỐI VỚI CƠ SỞ HẠ TẦNG CẦN THIẾT ĐỂ TRIỂN KHAI ỨNG DỤNG SẢN PHẨM
+- Mạng wifi, ổ cắm điện, bàn để đặt laptop và setup sản phẩm.
+SẢN PHẨM ĐƯỢC PHÁT TRIỂN ƯỚC TÍNH TRONG KHOẢNG THỜI GIAN
+Số tháng: 6 tháng (Từ 12/2025 đến 6/2026)
+HƯỚNG DẪN SỬ DỤNG SẢN PHẨM
+- Lắp đặt hệ thống camera ở vị trí phù hợp và cài đặt phần mềm giám sát ở trung tâm quản lí.
+TỰ ĐÁNH GIÁ VỀ NHỮNG MẶT CÒN TỒN TẠI CHƯA GIẢI QUYẾT ĐƯỢC CỦA SẢN PHẨM ĐỂ KHẮC PHỤC. 
+- Tiếp tục gia tăng chiều rộng và chiều sâu của bộ dữ liệu, huấn luyện AI đạt độ chính xác cao hơn và có thể hoạt động trong các điều kiện phức tạp của thực tế.
+- Nghiên cứu phát triển khả năng xử lí tại biên để giảm dung lượng truyền tải và tối ưu tốc độ xử lí tốt hơn xử lí tại trung tâm.
+
+      KẾT LUẬN
+Để hoàn thiện và nâng cao hiệu quả của hệ thống trong tương lai, nhóm đề xuất các hướng phát triển sau:
+1. Nâng cấp thuật toán AI: Tiếp tục huấn luyện mô hình với bộ dữ liệu lớn hơn và đa dạng hơn về điều kiện thời tiết và thời gian (ban đêm) để nâng cao độ chính xác nhận diện tai nạn.
+2. Tích hợp công nghệ Edge AI: Triển khai mô hình AI trực tiếp trên các vi xử lý tại biên (như Jetson Nano) để xử lý hình ảnh ngay tại camera, giúp giảm tải băng thông truyền tải và tăng tốc độ phản hồi cảnh báo.
+3. Mở rộng tính năng thông minh: Phát triển thêm chức năng phân tích mật độ giao thông và nhận diện hành vi tụ tập đông người để hỗ trợ công tác quản lý an ninh trật tự đô thị.
+4. Hoàn thiện hệ sinh thái: Xây dựng ứng dụng trên điện thoại di động (Mobile App) để gửi thông báo đẩy (Push Notification) trực tiếp cho lực lượng chức năng và người dân khi có sự cố xảy ra.
+5. Khảo sát, đánh giá tính khả thi của hệ thống khi đưa vào thực tế: Khảo sát và đề xuất đặt hệ thống ở các vị trí phù hợp trong thực tế.
+6. Kết nối liên thông: Tích hợp hệ thống vào mạng lưới Thành phố thông minh (Smart City), cho phép chia sẻ dữ liệu với các đơn vị cứu hộ, cứu hỏa và y tế để phối hợp xử lý sự cố nhanh nhất.
+
+      TÀI LIỆU THAM KHẢO
+[1] J. Redmon, S. Divvala, R. Girshick, and A. Farhadi,
+“You Only Look Once: Unified, Real-Time Object Detection,”
+Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
+[2] Wikipedia contributors. (n.d.). Tai nạn giao thông đường bộ. In Wikipedia, The Free Encyclopedia. Retrieved December 30, 2025, from https://vi.wikipedia.org/wiki/Tai_nạn_giao_thông 
+[3] Khanam, Rahima, and Muhammad Hussain. "Yolov11: An overview of the key architectural enhancements." arXiv preprint arXiv:2410.17725 (2024).
+[4] OpenCV documentation, “Introduction to OpenCV,” OpenCV Docs. [Online]. Available: https://docs.opencv.org/4.x/d1/dfb/intro.html.
+[5] R. Szeliski,Computer Vision: Algorithms and Applications, Springer, 2nd Edition, 2022.
+[6] Cisco Systems,Video Streaming over RTSP and IP Camera Systems,Cisco White Paper, 2023.
+[7] NVIDIA Corporation, Edge AI for Smart Cities and Intelligent Video Analytics,
+NVIDIA Technical Report, 2023.
+[8] World Health Organization (WHO), Global Status Report on Road Safety,WHO Press, 2023.
+[9] TEDI. (2016). An toàn giao thông đường bộ [PDF]. Retrieved December 30, 2025, from https://tedi.vn/wp-content/uploads/2016/12/5.pdf.
+[10] Công ty Luật Minh Khuê, Tai nạn giao thông là gì? – Khái niệm về tai nạn giao thông, truy cập tại: https://luatminhkhue.vn/tai-nan-giao-thong-la-gi---khai-niem-ve-tai-nan-giao-thong.aspx.
+[11] Ngân hàng Pháp luật, Tai nạn giao thông là gì?, truy cập tại: https://nganhangphapluat.thukyluat.vn/tu-van-phap-luat/giao-thong--van-tai/tai-nan-giao-thong-la-gi-222959
+[12] Y học Thực hành, Xác định một số yếu tố nguy cơ liên quan đến tai nạn giao thông, truy cập tại: https://yhth.vn
+[13] Ban An toàn Giao thông tỉnh Cà Mau, Các yếu tố ảnh hưởng đến an toàn giao thông, truy cập tại: http://batgt.camau.gov.vn/cac-yeu-to-anh-huong-den-an-toan-giao-thong.587
+[14] Tạp chí Cảnh sát Nhân dân, Bàn về khái niệm tai nạn giao thông đường bộ ở Việt Nam, truy cập tại: http://csnd.vn/Home/Nghien-cuu-Trao-doi/2789/Ban-ve-khai-niem-tai-nan-giao-thong-duong-bo-o-Viet-Nam
+
+      CAM KẾT
+Chúng tôi cam kết SPST dự thi chưa từng đạt giải tại các cuộc thi, hội thi cấp quốc gia hay quốc tế. Nếu sai phạm, chúng tôi xin chịu mọi hình thức xử lý theo quy định của Ban tổ chức.
+	 Đà Nẵng, ngày 15 tháng 6  năm 2026
+Chữ ký của tác giả/nhóm tác giả
