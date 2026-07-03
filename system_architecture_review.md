@@ -126,14 +126,14 @@ This module is structured around a central manager and dynamic nodes:
   * **Video Recording**:
     * Uses an `EventRecorder` with `deque` buffers.
     * When triggered (automatically or manually), it captures `PRE_EVENT_SEC` (5s) from history and writes another `POST_EVENT_SEC` (5s).
-    * Subprocess pipelines the raw frames into an `ffmpeg` writer utilizing NVIDIA GPU acceleration (`-c:v h264_nvenc`) to output standard `.mp4` video files to the `/alerts` folder. The subprocess strictly routes `stdout` and `stderr` to `DEVNULL` to prevent OS pipe buffer deadlocks which previously caused catastrophic out-of-memory (`_ArrayMemoryError`) leaks.
+    * Uses OpenCV's native `cv2.VideoWriter` to encode the raw frames into an `.mp4` video file to the `/alerts` folder. This replaces the previous `ffmpeg` subprocess to avoid pipe deadlocks and crashes when the OS runs out of disk space. Frames are downscaled to `640x360` before entering the buffer to prevent catastrophic `OutOfMemoryError` leaks.
     * Posts the metadata to the backend endpoint `/alert`.
 * **24/7 Continuous Recording (`ContinuousRecorder`)**:
   * Records consecutive 5-second video clips (`CONTINUOUS_CLIP_DURATION = 5`).
   * Saves clips organized by day/hour folders: `../continuous_recordings/YYYY-MM-DD/HH/`.
 * **HTTP & WebRTC Server (`aiohttp` on port 8080)**:
-  * Serves `/offer/{cam_id}` POST requests to coordinate the WebRTC SDP handshake, mapping a custom `VideoStreamTrack` subclass `WebRTCCamera` to feed the `latest_frame` of the requested camera.
-  * Exposes `/mjpeg/{cam_id}` GET endpoint that serves a native `multipart/x-mixed-replace` JPEG stream. This acts as a highly robust zero-latency fallback for mobile clients.
+  * Serves `/offer/{cam_id}` POST requests to coordinate the WebRTC SDP handshake, feeding the `latest_frame` exclusively to the React Admin Web UI.
+  * Exposes `/mjpeg/{cam_id}` GET endpoint that serves a native `multipart/x-mixed-replace` JPEG stream. This is consumed natively by the Flutter app via `http.Client`, completely bypassing WebRTC to eliminate cellular NAT traversal latency.
   * Serves `/manual_trigger/{cam_id}` POST requests to enqueue manual alerts from the backend.
 
 ### 2. Backend API Service (`Arlert_BE/`)

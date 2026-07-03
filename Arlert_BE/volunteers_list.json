@@ -118,5 +118,45 @@
     "badge": "Tân hiệp sĩ",
     "joined_at": "2026-07-02 18:39:03",
     "last_active": "2026-07-02 19:33:01"
+  },
+  {
+    "user_id": "6a479beb3bc36ea4ffc35e70",
+    "phone": "0795569655",
+    "name": "Tịnh Khang",
+    "skills": "bác sĩ",
+    "points": 0,
+    "badge": "Người tốt bụng",
+    "joined_at": "2026-07-03 18:29:28",
+    "last_active": "2026-07-03 18:29:28"
+  },
+  {
+    "user_id": "6a47d6ef0bed82ac987cd6c9",
+    "phone": "0794645165",
+    "name": "phan khang",
+    "skills": "bác sĩ ",
+    "points": 75,
+    "badge": "Người tốt bụng",
+    "joined_at": "2026-07-04 00:08:48",
+    "last_active": "2026-07-04 00:48:08"
+  },
+  {
+    "user_id": "6a47f0adcfad020a72482d38",
+    "phone": "0768491108",
+    "name": "Tô Đăng Phước",
+    "skills": "hỗ trợ",
+    "points": 25,
+    "badge": "Người tốt bụng",
+    "joined_at": "2026-07-04 00:28:26",
+    "last_active": "2026-07-04 00:42:18"
+  },
+  {
+    "user_id": "6a47f59e87e280d04faf6cc5",
+    "phone": "333333333333",
+    "name": "Tô Phước",
+    "skills": "chạy",
+    "points": 0,
+    "badge": "Người tốt bụng",
+    "joined_at": "2026-07-04 00:47:54",
+    "last_active": "2026-07-04 00:50:12"
   }
 ]

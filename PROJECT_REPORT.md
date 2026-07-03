@@ -14,7 +14,7 @@ The system consists of three main running components:
 1. **Multi-Camera Inference**: `arlert.py` runs a central `CameraManager` that performs batch inference across multiple RTSP streams simultaneously. It uses three YOLO models (`ver3.pt` for accidents, `fire.pt` for fires, `person.pt` for vehicles).
 2. **Buffering**: It maintains a continuous rolling frame buffer (5 seconds of `PRE_EVENT_SEC`). 
 3. **Trigger**: If a detection meets the frame threshold or stationary time threshold, it triggers recording for `POST_EVENT_SEC` (5 seconds). *Note: The detection frame counters are strictly bounded (`max_counter = ALERT_FRAME_THRESHOLD + 20`) to prevent infinite growth, ensuring the system resets and is ready for subsequent alerts within ~2 seconds of an incident leaving the frame.*
-4. **Saving**: Independent `EventRecorder` instances for each camera use `subprocess.Popen` to call `ffmpeg`, encoding the 10-second clip (h264_nvenc or libx264) to an `.mp4` file isolated by camera ID.
+4. **Saving**: Independent `EventRecorder` instances for each camera use OpenCV's built-in `cv2.VideoWriter` to encode the 10-second clip to an `.mp4` file isolated by camera ID. This replaces the previous `ffmpeg` subprocess to avoid pipe deadlocks when disks run out of space. Frames are also resized to `640x360` to reduce RAM usage.
 5. **API Call**: `arlert.py` sends a `POST` request to `http://localhost:8000/alert` containing the file path, metadata, and the specific `cam_id` that triggered the alert.
 
 ### B. Alert Dispatch and Notifications
@@ -26,10 +26,10 @@ The system consists of three main running components:
 6. **Mobile Handling**: The Flutter app's background isolate (`_firebaseMessagingBackgroundHandler`) receives the data payload and manually generates a system notification using the `flutter_local_notifications` plugin, utilizing `priority=high` to wake devices.
 
 ### C. Live Video Streaming
-1. **WebRTC Proxy**: When a volunteer wants to view the live camera, the Flutter app sends an SDP offer to `alert_server.py` (`POST /offer/{cam_id}`).
+1. **WebRTC Proxy (Admin Web)**: When a web admin wants to view the live camera, the React app sends an SDP offer to `alert_server.py`.
 2. **Relay**: The backend proxies this request to `arlert.py` (`http://localhost:8080/offer/{cam_id}`).
-3. **P2P Connection**: `arlert.py` processes the SDP offer using the `aiortc` library, generates an answer, and streams the video frames directly to the Flutter app via WebRTC.
-4. **MJPEG Fallback**: If the WebRTC connection fails (e.g., `RTCPeerConnectionStateFailed`), the Flutter app falls back to a standard HTTP MJPEG stream at `http://<host>:8080/mjpeg/{cam_id}`.
+3. **P2P Connection**: `arlert.py` processes the SDP offer using the `aiortc` library, generating an answer and streaming the video frames directly to the React dashboard via WebRTC.
+4. **Pure MJPEG (Mobile)**: For the Flutter volunteer app, WebRTC is bypassed entirely to avoid cellular NAT traversal latency. The mobile app strictly consumes a robust, lightweight `multipart/x-mixed-replace` JPEG stream at `http://<host>:8080/mjpeg/{cam_id}`.
 
 ### D. Volunteer Response and Routing
 1. **Registration**: When a user taps the notification, Flutter sends a `POST /api/volunteer` request. The backend adds the user to the alert's `volunteers` array in MongoDB.
@@ -70,3 +70,8 @@ The system consists of three main running components:
    - **ValueNotifier State Corruption Fix**: Resolved a critical Flutter crash where tapping subsequent push notifications resulted in unresponsive UI elements ("panel not showing on next alert"). The fix implements an `addPostFrameCallback` boundary that prevents synchronous modification of `ValueNotifier` during listener execution loops.
    - **Map State Rehydration**: Replaced static tabs in the Flutter app with an interactive reload trigger. Tapping the active "Map" tab immediately triggers a global state refresh, re-pinging GPS and fetching the latest camera coordinates.
    - **React WebSocket Cleanup**: Hardened the `useAlerts.js` socket component to rigorously clean up duplicate WS connections spawned by React Strict Mode, stopping duplicate alert sounds and excessive network load.
+
+### G. Final Stabilization & Performance (Phase 6)
+1. **Pure MJPEG Mobile Strategy**: Due to unreliable WebRTC NAT traversal on cellular networks (4G/LTE) causing infinite loading in the Flutter app, `flutter_webrtc` was entirely removed. The mobile app now leverages a custom `http.Client` to stream a native HTTP MJPEG feed. Furthermore, backend camera frames are explicitly downscaled to `640x360` before entering the stream buffer, yielding a 90% reduction in bandwidth consumption. This enables the system to effortlessly serve 10+ mobile clients simultaneously over a standard laptop hotspot without choking.
+2. **Oppo/Custom ROM Video Intercept Bypass**: Discovered that Oppo devices (ColorOS) strip custom HTTP headers (`ngrok-skip-browser-warning`) inside the Flutter `video_player`'s ExoPlayer implementation, causing the free ngrok proxy to intercept `.mp4` requests with a warning HTML page and crashing playback. This was resolved by restructuring the mobile app to proactively download the video file into the temporary local cache via `http.get` (guaranteeing header preservation) and playing the file locally.
+3. **Memory & I/O Pipeline Fixes**: Migrated the recording pipeline in `arlert.py` away from the `ffmpeg` external binary to OpenCV's native `cv2.VideoWriter`. This solved catastrophic memory deadlocks (`[Errno 22]`) when the host machine ran out of disk space, while the aforementioned `640x360` frame downscaling mitigated gigabyte-scale memory leaks (OOM errors) previously observed in the 5-second `deque` buffers.

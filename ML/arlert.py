@@ -9,6 +9,9 @@ import requests
 from collections import deque
 import subprocess
 import numpy as np
+import os
+
+os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp"
 
 from ultralytics import YOLO
 from aiortc import (
@@ -83,18 +86,22 @@ class CameraNode:
         threading.Thread(target=self.recording_loop, daemon=True).start()
 
     def camera_loop(self):
-        try:
-            url = int(self.rtsp_url)
-            cap = cv2.VideoCapture(url, cv2.CAP_DSHOW)
-            is_live = True
-        except ValueError:
-            cap = cv2.VideoCapture(self.rtsp_url)
-            is_live = str(self.rtsp_url).startswith("rtsp://") or str(self.rtsp_url).startswith("http://")
-        
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        if fps <= 0 or fps > 100:
-            fps = 30
-        frame_delay = 1.0 / fps
+        def init_cap():
+            try:
+                url = int(self.rtsp_url)
+                c = cv2.VideoCapture(url, cv2.CAP_DSHOW)
+                is_live = True
+            except ValueError:
+                c = cv2.VideoCapture(self.rtsp_url)
+                is_live = str(self.rtsp_url).startswith("rtsp://") or str(self.rtsp_url).startswith("http://")
+            
+            fps = c.get(cv2.CAP_PROP_FPS)
+            if fps <= 0 or fps > 100:
+                fps = 30
+            return c, is_live, 1.0 / fps
+
+        cap, is_live, frame_delay = init_cap()
+        fail_count = 0
 
         while self.is_running:
             start_t = time.time()
@@ -103,9 +110,18 @@ class CameraNode:
                 if not is_live:
                     cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 else:
-                    time.sleep(0.01)
+                    fail_count += 1
+                    time.sleep(0.05)
+                    # Reconnect if stream is dead (failed ~2.5 seconds consecutively)
+                    if fail_count > 50:
+                        print(f"⚠️ Reconnecting camera {self.cam_id}...")
+                        cap.release()
+                        time.sleep(1)
+                        cap, is_live, frame_delay = init_cap()
+                        fail_count = 0
                 continue
 
+            fail_count = 0
             with self.frame_lock:
                 self.latest_frame = frame.copy()
                 
@@ -353,8 +369,8 @@ def detection_loop():
             continue
 
         # Process batch
-        acc_results = model_accident(batch_frames, classes=[0], conf=0.7, verbose=False)
-        fire_results = model_fire(batch_frames, conf=0.7, verbose=False)
+        acc_results = model_accident(batch_frames, classes=[0], conf=0.6, verbose=False)
+        fire_results = model_fire(batch_frames, conf=0.8, verbose=False)
         vehicle_results = model_vehicle.track(batch_frames, classes=[2, 3, 5, 7], conf=0.4, verbose=False, persist=True)
         
         now = time.time()
@@ -504,18 +520,24 @@ async def mjpeg_handler(request):
 
     async def generate():
         while True:
-            if node.latest_frame is not None:
-                with node.frame_lock:
-                    frame = node.latest_frame.copy()
-                ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
-                if ret:
-                    yield b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n'
-            await asyncio.sleep(0.1)
+            try:
+                if node.latest_frame is not None:
+                    with node.frame_lock:
+                        frame = node.latest_frame.copy()
+                    ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
+                    if ret:
+                        yield b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n'
+                await asyncio.sleep(0.05)
+            except Exception:
+                break
 
     response = web.StreamResponse(status=200, reason='OK', headers={'Content-Type': 'multipart/x-mixed-replace;boundary=frame'})
     await response.prepare(request)
-    async for chunk in generate():
-        await response.write(chunk)
+    try:
+        async for chunk in generate():
+            await response.write(chunk)
+    except (ConnectionResetError, BrokenPipeError):
+        pass
     return response
 
 async def manual_trigger(request):
@@ -536,6 +558,22 @@ async def manual_trigger(request):
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
+async def snapshot_handler(request):
+    cam_id = request.match_info.get('cam_id')
+    with cameras_lock:
+        if cam_id not in cameras:
+            return web.json_response({"error": "Camera not found"}, status=404)
+        node = cameras[cam_id]
+
+    if node.latest_frame is not None:
+        with node.frame_lock:
+            frame = node.latest_frame.copy()
+        ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
+        if ret:
+            return web.Response(body=buffer.tobytes(), content_type='image/jpeg')
+
+    return web.json_response({"error": "No frame available"}, status=500)
+
 app = web.Application()
 cors = aiohttp_cors.setup(app, defaults={
     "*": aiohttp_cors.ResourceOptions(allow_headers="*", allow_methods="*", allow_credentials=True)
@@ -546,6 +584,9 @@ cors.add(resource.add_route("POST", offer))
 
 mjpeg_resource = cors.add(app.router.add_resource("/mjpeg/{cam_id}"))
 cors.add(mjpeg_resource.add_route("GET", mjpeg_handler))
+
+snapshot_resource = cors.add(app.router.add_resource("/snapshot/{cam_id}"))
+cors.add(snapshot_resource.add_route("GET", snapshot_handler))
 
 trigger_resource = cors.add(app.router.add_resource("/manual_trigger/{cam_id}"))
 cors.add(trigger_resource.add_route("POST", manual_trigger))

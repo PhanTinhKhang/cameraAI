@@ -1,9 +1,9 @@
 # =====================
 # alert_server.py
 # =====================
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from datetime import datetime
@@ -43,32 +43,11 @@ _distance_cache = {}  # key: (rounded coords) -> (distance_km, timestamp)
 _CACHE_TTL = 60  # seconds
 
 async def get_road_distance(origin_lat, origin_lng, dest_lat, dest_lng):
-    # Round to 4 decimal places (~11m precision) for cache key
-    cache_key = (round(origin_lat, 4), round(origin_lng, 4), round(dest_lat, 4), round(dest_lng, 4))
-    now = time.time()
-    
-    # Check cache
-    if cache_key in _distance_cache:
-        cached_dist, cached_time = _distance_cache[cache_key]
-        if now - cached_time < _CACHE_TTL:
-            return cached_dist
-    
-    url = f"http://router.project-osrm.org/route/v1/driving/{origin_lng},{origin_lat};{dest_lng},{dest_lat}?overview=false"
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, timeout=5.0)
-            data = resp.json()
-            if data.get("code") == "Ok":
-                distance_km = data["routes"][0]["distance"] / 1000.0
-                _distance_cache[cache_key] = (distance_km, now)
-                return distance_km
-    except Exception as e:
-        print("OSRM API error:", e)
-    
-    # Fallback to haversine if API fails
-    fallback = haversine(origin_lat, origin_lng, dest_lat, dest_lng)
-    print(f"  ⚠️ Using haversine fallback: {fallback:.3f}km (OSRM unavailable)")
-    return fallback
+    # We now strictly use straight-line (Haversine) distance so that it perfectly matches 
+    # the visual red circle drawn on the Flutter map. Driving distance (OSRM) is often 
+    # longer than straight-line distance, which was causing alerts that were visually inside 
+    # the circle to be incorrectly skipped by the backend.
+    return haversine(origin_lat, origin_lng, dest_lat, dest_lng)
 
 from db import alerts_col, users_col
 
@@ -275,10 +254,6 @@ async def receive_alert(alert: dict):
                         alert_title = f"🚨 PHÁT HIỆN {alert['type'].upper()} GẦN BẠN!"
                         alert_body = f"Cách vị trí của bạn {dist:.1f}km. Click để ứng cứu!"
                         message = messaging.Message(
-                            notification=messaging.Notification(
-                                title=alert_title,
-                                body=alert_body,
-                            ),
                             data={
                                 "alert_id": str(alert["_id"]),
                                 "type": alert["type"],
@@ -398,6 +373,31 @@ async def webrtc_offer_proxy(cam_id: str, offer: OfferRequest):
             return response.json()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"WebRTC proxy error: {str(e)}")
+
+@app.get("/mjpeg/{cam_id}")
+async def proxy_mjpeg_dynamic(cam_id: str):
+    async def stream_generator():
+        async with httpx.AsyncClient() as client:
+            async with client.stream("GET", f"http://localhost:8080/mjpeg/{cam_id}", timeout=None) as response:
+                async for chunk in response.aiter_bytes():
+                    yield chunk
+                    
+    return StreamingResponse(
+        stream_generator(),
+        media_type="multipart/x-mixed-replace;boundary=frame"
+    )
+
+@app.get("/snapshot/{cam_id}")
+async def proxy_snapshot_dynamic(cam_id: str):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"http://localhost:8080/snapshot/{cam_id}",
+                timeout=5.0
+            )
+            return Response(content=response.content, media_type="image/jpeg")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/offer")
 async def webrtc_offer_proxy_legacy(offer: OfferRequest):

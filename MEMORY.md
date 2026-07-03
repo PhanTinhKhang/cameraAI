@@ -123,7 +123,11 @@ To prevent you from repeating past mistakes, here is exactly what we fixed toget
 - **Alarm Sound Boundaries**: Refactored `_showAlertIfInRange` to ensure the siren sound `alarm_clock.ogg` only plays if the incident is actively within the user's configured radius, eliminating annoying audio for out-of-bounds alerts.
 - **Chat Push Notification Content Preview**: Replaced the generic "Bạn có X tin nhắn chưa đọc" notification body with a dynamic preview of the actual message content (text string, `[Hình ảnh]`, or `[Tin nhắn thoại]`) in `mission_screen.dart`.
 - **Chat Bubble Safe Area Repositioning**: Moved the default `_fabY` coordinate of the Draggable Chat Bubble to `screenHeight - 320.0` so it rests safely above the bottom action panel in the Mission Screen, preventing it from obscuring the "Xem Camera" and "Báo Cáo" buttons.
-
+- **Phase 6: Final Stabilization & Performance**:
+  - **Backend Memory Leak & FFMpeg Replacement**: Replaced subprocess `ffmpeg` with OpenCV's built-in `cv2.VideoWriter` to prevent pipe deadlocks (`[Errno 22]`) when disks ran out of space. Downscaled `latest_frame` to `640x360` before storing in buffer to prevent `OutOfMemoryError` and drastically reduce RAM usage from gigabytes down to megabytes.
+  - **Pure MJPEG Mobile Stream**: Ripped out the `flutter_webrtc` plugin completely from the Flutter app due to massive latency/NAT issues and Kotlin compiler errors. Replaced it with a custom `http.Client` parsing the backend's `/mjpeg` stream, yielding instant sub-second video loading on all network types and drastically lower bandwidth (thanks to the 640x360 resize).
+  - **Oppo A60 ExoPlayer Ngrok Intercept Fix**: Fixed a critical bug where Oppo devices running ColorOS stripped HTTP headers in the Flutter `video_player`, causing ngrok to intercept `.mp4` range requests with a "browser warning" HTML page and hanging the player indefinitely. We bypassed this by explicitly downloading the video to the device's temporary cache using `http.get()` (which strictly enforces the ngrok bypass header) and then playing it as a local `File`.
+  - **Mission Screen Siren Block**: Added an early return to `_showAlertIfInRange` to block background sirens and popups when the volunteer is already actively looking at the `MissionScreen`.
 
 ## 4. How to Run the System
 The entire suite is launched via a single batch script:
