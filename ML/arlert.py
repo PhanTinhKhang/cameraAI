@@ -12,6 +12,7 @@ import numpy as np
 import os
 
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp"
+os.environ["OPENCV_FFMPEG_READ_TIMEOUT"] = "3000"
 
 from ultralytics import YOLO
 from aiortc import (
@@ -24,6 +25,21 @@ from aiortc import (
 from aiohttp import web
 import aiohttp_cors
 import av
+import sys
+
+# Windows asyncio bug workaround for ConnectionResetError
+if sys.platform == 'win32':
+    import functools
+    from asyncio.proactor_events import _ProactorBasePipeTransport
+    def silence_connection_reset(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except ConnectionResetError:
+                pass
+        return wrapper
+    _ProactorBasePipeTransport._call_connection_lost = silence_connection_reset(_ProactorBasePipeTransport._call_connection_lost)
 
 # =========================
 # CONFIG
@@ -122,6 +138,7 @@ class CameraNode:
                 continue
 
             fail_count = 0
+            frame = cv2.resize(frame, (640, 360))
             with self.frame_lock:
                 self.latest_frame = frame.copy()
                 
@@ -212,14 +229,14 @@ class EventRecorder:
             print("Failed to notify backend of new alert:", e)
         
         h, w, _ = frames_to_save[0].shape
-        cmd = [
-            "ffmpeg", "-y", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{w}x{h}",
-            "-r", str(TARGET_FPS), "-i", "-", "-an", "-c:v", ffmpeg_codec,
-            "-preset", "fast", "-r", str(TARGET_FPS), "-g", "50",
-            "-profile:v", "baseline", "-pix_fmt", "yuv420p", "-movflags", "+faststart", path
-        ]
-
+        
         try:
+            cmd = [
+                "ffmpeg", "-y", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{w}x{h}",
+                "-r", str(TARGET_FPS), "-i", "-", "-an", "-c:v", ffmpeg_codec,
+                "-preset", "fast", "-r", str(TARGET_FPS), "-g", "50",
+                "-profile:v", "baseline", "-pix_fmt", "yuv420p", "-movflags", "+faststart", path
+            ]
             proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             for f in frames_to_save:
                 proc.stdin.write(f.tobytes())
